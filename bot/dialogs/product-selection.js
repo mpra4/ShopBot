@@ -16,7 +16,6 @@ var carouselOptions = {
 var Client = require('node-rest-client').Client;
 var solr = require('solr-client');
 var SolrQueryBuilder = require('solr-query-builder');
-var SolrNode = require('solr-node');
 
 var client = new Client();
 
