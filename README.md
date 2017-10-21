@@ -22,6 +22,9 @@ sudo apt-get install tesseract-ocr
 * tiff_folder.     The directory for storing the tiff files generated.
 * output_folder.   The directory for storing the output files.
 
+### Arguments
+/path/to/sample_pdfs/ /path/to/tiff_folder/ /path/to/output_folder num_cores 
+
 ### Example (running on 2 cores)
 ````
 ./pdfToHocr.sh /mnt/sample_pdfs/ /mnt/tiff_folder/ /mnt/output_folder/ 2
