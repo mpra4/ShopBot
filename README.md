@@ -1,204 +1,36 @@
-# Contoso Flowers Sample Bot
+# Tesseract Conversion from PDF's to HOCR . 
 
-Your company started looking for a new platform to create new chat bots and port existing bots and is searching which better suits their needs. One of the requirements is that you'll need to support different platforms (Facebook, Slack, Skype and Webchat).
-Several chat bots already exists in these platforms using different tools and learned that different platforms support different native features. Moreover, there's a running implementation of the bot in the native platform (e.g. a Facebook bot) which makes you want to make sure using native features is supported.
 
-You came across the Microsoft Bot Framework which support a great variety of channels (platforms), programming languages (C# and Node) and supports both state-of-the-art standard bot features and mechanisms to also take advantage of native features (via ChannelData).
+This bash script shows how to speed up tessearact in converting pdf documents to hocr format using gnu parallel.
 
-[![Deploy to Azure][Deploy Button]][Deploy Node/ContosoFlowers]
-
-[Deploy Button]: https://azuredeploy.net/deploybutton.png
-[Deploy Node/ContosoFlowers]: https://azuredeploy.net
-
-### Prerequisites
+### Requirements
 
 The minimum prerequisites to run this sample are:
-* Latest Node.js with NPM. Download it from [here](https://nodejs.org/en/download/).
-* The Bot Framework Emulator. To install the Bot Framework Emulator, download it from [here](https://emulator.botframework.com/). Please refer to [this documentation article](https://github.com/microsoft/botframework-emulator/wiki/Getting-Started) to know more about the Bot Framework Emulator.
-* **[Recommended]** Visual Studio Code for IntelliSense and debugging, download it from [here](https://code.visualstudio.com/) for free.
+* Gnu parallel. To run the tesseract on multiple cores
+* Imagemagic. To convert the pdf document to tiff image.
+* Tesseract. To perform the conversion from tiff image to hocr format.
 
-#### Integration with Express.js
-BotBuilder is implemented as a REST API, basically a web endpoint where all your bot messages will be routed to. This is done through the ChatConnector's [listen()](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.chatconnector.html#listen) function and it is hooked to your existing [express.js](https://expressjs.com/) or [restify.js](http://restify.com/) application, thus leveraging your web application scalability. If the scaling requirements of your bot are different than your web application, you can opt to host it separatly.
-
-The simplest way to hook your bot with your express.js app is to use express.js routing as follows: 
-````JavaScript
-server.post('/api/messages', connector.listen());
+The simplest way to install the requirements are as follows: 
+````Terminal
+sudo apt-get install parallel
+sudo apt-get install imagemagick
+sudo apt-get install tesseract-ocr
 ````
+2. Create the following folders
 
-In Contoso Flowers, we are wrapping the Connector's `listen()` method in order to capture the web application's url. We'll use this url later to create a link to the ckeckout form.
+/mnt/sample_pdfs/
+/mnt/tiff_folder/
+/mnt/output_folder/ 2
 
-Checkout [bot/index.js](bot/index.js#L108-L118) to see how to capture the url and [app.js](app.js#L27-L29) to see how to register the hook.
+Example
 
-````JavaScript
-// /bot/index.js
-var connectorListener = connector.listen();
-function listen() {
-    return function (req, res) {
-        // Capture the url for the hosted application
-        // We'll later need this url to create the checkout link 
-        var url = req.protocol + '://' + req.get('host');
-        siteUrl.save(url);
-        connectorListener(req, res);
-    };
-}
+./pdfToHocr.sh /mnt/sample_pdfs/ /mnt/tiff_folder/ /mnt/output_folder/ 2
 
-module.exports.listen = listen;
+3. To view core utilization
+sudo apt-get install htop
 
-// /app.js
-// Then, register the hook from your express.js application:
-var bot = require('./bot');
-app.post('/api/messages', bot.listen());
-```` 
+put the attachment from below.
 
-#### Welcome Message
-
-Some platforms provide a way to detect when a new conversation with the bot is created. We can use this to provide a welcome message  before the user starts typing. This can be achived using the [`conversationUpdate`](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.iconversationupdate.html) event. Checkout [bot/index.js](bot/index.js#L82-L91) for details on how the root dialog is triggered.
-
-````JavaScript
-// Send welcome when conversation with bot is started, by initiating the root dialog
-bot.on('conversationUpdate', function (message) {
-    if (message.membersAdded) {
-        message.membersAdded.forEach(function (identity) {
-            if (identity.id === message.address.bot.id) {
-                bot.beginDialog(message.address, '/');
-            }
-        });
-    }
-});
-````
-
-![Welcome Message](images/welcomemessage-emulator.png)
-
-#### Multi-Dialogs Approach
-
-Dialogs can be composed with other dialogs to maximize reuse, and a dialog context maintains a stack of dialogs active in the conversation. In this sample, the main flow is implemented in the [shop dialog](bot/dialogs/shop.js) and it is composed of several other dialogs that may also break-down into sub-dialogs.
-
-Each of these dialogs are implemented as a [BotBuilder Library](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.library.html) (more information below). The important thing is that each library manages a small step in the flow, and the result of each is passed back to the dialog stack using [session.endDialogWithResult()](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.session.html#enddialogwithresult).
-
-These are the more important ones related to the shopping experience:
-
-* [**Shop Dialog**](bot/dialogs/shop.js)
-  
-  Handles the main flow of the shopping experience. Calls other dialogs to capture information like the selected product, delivery address, recipient information and triggers the checkout flow.
-
-* [**Address Dialogs**](bot/dialogs/address.js)
-
-  Asks for address using [BotBuilder's Location picker control](https://github.com/Microsoft/BotBuilder-Location). It also contains the dialog for asking and saving the billing addresses.
-
-* [**Details Dialogs**](bot/dialogs/details.js)
-
-  Asks for recipient name, notes and sender information.
-
-* [**Product Selection Dialog**](bot/dialogs/product-selection.js)
-
-  Displays categories and their products. Handles pagination of products and validating the product selection.
-
-* [**Checkout Dialog**](bot/dialogs/checkout.js)
-
-  Displays a summary of the order and provides a link to the web application for payment. Also handles sending the receipt to the user once the purchase is completed.
-
-* [**Settings Dialog**](bot/dialogs/settings.js)
-
-  Handles viewing and editing the user's saved information, like phone number, email and billing addresses.
-
-#### Bot Libraries for Creating Reusable Dialogs
-
-Libraries of reusable parts can be developed by creating a new Library instance and adding dialogs just as you would to a bot. Your library should have a unique name that corresponds to either your libraries website or NPM module name. Bots can then reuse your library by simply adding your parts Library instance to their bot using [UniversalBot.library()](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.universalbot.html#library).
-
-To invoke dialogs within the bot, we use [session.beginDialog()](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.session.html#begindialog) with a fully qualified dialog id in the form of ':'.
-
-E.g.: To start the shopping's experience root dialog we use `session.beginDialog('shop:/')`.
-
-````JavaScript
-// /bot/dialogs/shop.js
-var lib = new builder.Library('shop');
-lib.dialog('/', [
-    function (session) {
-        // Ask for delivery address using 'address' library
-        session.beginDialog('address:/',
-            {
-                promptMessage: session.gettext('provide_delivery_address', session.message.user.name || session.gettext('default_user_name'))
-            });
-    },
-    function (session, args) {
-        // Retrieve address, continue to shop
-        session.dialogData.recipientAddress = args.address;
-        session.beginDialog('product-selection:/');
-    },
-    // ...
-});
-````
-
-Another more common approach for this feature is encapsulating a re-usable dialog. A good example of these are prompt validators. In this sample, common validations are packaged in the [bot/validators](bot/validators.js) library.
-
-This is how you could package an email validation:
-
-````JavaScript
-var EmailRegex = new RegExp(/[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/);
-
-var lib = new builder.Library('validators');
-
-lib.dialog('email',
-    new builder.IntentDialog()
-        .onBegin(function (session, args) {
-            session.dialogData.retryPrompt = args.retryPrompt;
-            session.send(args.prompt);
-        }).matches(EmailRegex, function (session) {
-            session.endDialogWithResult({ response: session.message.text });
-        }).onDefault(function (session) {
-            session.send(session.dialogData.retryPrompt);
-        }));
-
-// Export createLibrary() function
-module.exports.createLibrary = function () {
-    return lib.clone();
-};
-```` 
-
-And this is how you can call the validator from your existing code:
-
-````JavaScript
-// Waterfall Dialog
-[
-    function (session) {
-        session.beginDialog('validators:email', {
-            prompt: 'What\'s your email?',
-            retryPrompt: 'Something is wrong with that email address. Please try again.'
-        });
-    },
-    function (session, args, next) {
-        var email  = args.response;
-        // TODO: Save email address
-        // ...
-    }
-]
-````
-
-> It is worth noting that calling other dialogs within your library don't need to be prefixed with the library's id. It is only when crossing from one library context to another that you need to include the library name prefix on your `session.beginDialog()` calls.
-
-Another example of a reusable library is the [BotBuilder's Location picker control](https://github.com/Microsoft/BotBuilder-Location). Once the module is added to your project dependencies, you can register it with your bot and start using it.
-Checkout the [address dialog](bot/dialogs/address.js#L6-L30) to see its usage within Contoso Flowers.
-
-````JavaScript
-var lib = new builder.Library('address');
-
-// Register BotBuilder-Location dialog
-lib.library(locationDialog.createLibrary(process.env.BING_MAPS_KEY));
-
-// Main request address dialog, invokes BotBuilder-Location
-lib.dialog('/', [
-    function (session, args) {
-        // Use botbuilder-location dialog for address request
-        var options = {
-            prompt: 'What is your address?',
-            useNativeControl: true,
-            reverseGeocode: true,
-            skipConfirmationAsk: true,
-            requiredFields:
-                locationDialog.LocationRequiredFields.streetAddress |
-                locationDialog.LocationRequiredFields.locality |
-                locationDialog.LocationRequiredFields.country
-        };
 
         locationDialog.getLocation(session, options);
     },
