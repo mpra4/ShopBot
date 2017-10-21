@@ -18,9 +18,9 @@ sudo apt-get install tesseract-ocr
 ````
 ### Create the following folders
 
-* sample_pdfs     The directory having the pdf files 
-* tiff_folder     The directory for storing the tiff files generated.
-* output_folder   The directory for storing the output files.
+* sample_pdfs.     The directory having the pdf files 
+* tiff_folder.     The directory for storing the tiff files generated.
+* output_folder.   The directory for storing the output files.
 
 ### Example
 ````
@@ -33,61 +33,6 @@ sudo apt-get install htop
 
 put the attachment from below.
 
-
-        locationDialog.getLocation(session, options);
-    },
-    // ...
-````
-
-| Emulator | Facebook | Skype |
-|----------|-------|----------|
-|![Bing Location Control](images/bing-location-emulator.png)|![Bing Location Control](images/bing-location-facebook.png)|![Bing Location Control](images/bing-location-skype.png)|
-
-#### Rich Cards 
-
-Many messaging channels provide the ability to attach richer objects. The Bot Framework has the ability to render rich cards as attachments.
-
-The bot will render a Welcome message upon the first message or conversation start using a [HeroCard](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.herocard) attachment within the [bot's root dialog](bot/index.js#L22-L36).
-
-````JavaScript
-var welcomeCard = new builder.HeroCard(session)
-    .title('welcome_title')
-    .subtitle('welcome_subtitle')
-    .images([
-        new builder.CardImage(session)
-            .url('https://placeholdit.imgix.net/~text?txtsize=56&txt=Contoso%20Flowers&w=640&h=330')
-            .alt('contoso_flowers')
-    ])
-    .buttons([
-        builder.CardAction.imBack(session, session.gettext(MainOptions.Shop), MainOptions.Shop),
-        builder.CardAction.imBack(session, session.gettext(MainOptions.Support), MainOptions.Support)
-    ]);
-
-session.send(new builder.Message(session)
-    .addAttachment(welcomeCard));
-````
-
-| Emulator | Facebook | Skype |
-|----------|-------|----------|
-|![Rich Cards - Hero Card](images/richcards-herocard-emulator.png)|![Rich Cards - Hero Card](images/richcards-herocard-facebook.png)|![Rich Cards - Hero Card](images/richcards-herocard-skype.png)|
-
-
-Another example of rich card, is the ReceiptCard which renders differently depending on the messaging channel being supported. The receipt card is created in the [checkout's `completed` dialog](bot/dialogs/checkout.js#L73-L107) and is sent once the user completed the order payment.
-
-````JavaScript
-// Retrieve order and create ReceiptCard
-orderService.retrieveOrder(orderId).then(function (order) {
-    if (!order) {
-        throw new Error(session.gettext('order_not_found'));
-    }
-
-    var messageText = session.gettext(
-        'order_details',
-        order.id,
-        order.selection.name,
-        order.details.recipient.firstName,
-        order.details.recipient.lastName,
-        order.details.note);
 
     var receiptCard = new builder.ReceiptCard(session)
         .title(order.paymentDetails.creditcardHolder)
@@ -263,29 +208,7 @@ switch (option) {
     // ...
 }
 ````
-| Emulator | Facebook | Skype |
-|----------|-------|----------|
-|![State SettingsDialog](images/state-settingsdialog-emulator.png)|![State SettingsDialog](images/state-settingsdialog-facebook.png)|![State SettingsDialog](images/state-settingsdialog-skype.png)|
 
-> You can also see a full sample bot tracking context of a conversation in the [State API Bot Sample](../core-State).
-
-The [shop dialog](bot/dialogs/shop.js) on the other hand, shows how to use `dialogData` to store information about the order and details, within the dialog instance, and then use it in the last step to trigger the checkout process.
-
-````JavaScript
-library.dialog('/', [
-    function (session) {
-        // Ask for delivery address using 'address' library
-        session.beginDialog('address:/');
-    },
-    function (session, args) {
-        // Retrieve address, continue to shop
-        session.dialogData.recipientAddress = args.address;
-        session.beginDialog('product-selection:/');
-    },
-    function (session, args) {
-        // Retrieve selection, continue to delivery date
-        session.dialogData.selection = args.selection;
-        session.beginDialog('delivery:date');
     },
     //...
     function (session, args) {
@@ -468,58 +391,4 @@ session.send(new builder.Message(session)
     .addAttachment(welcomeCard));
 ````
 
-Internally, the SDK will call `session.preferredLocale()` to get the users preferred locale and will then use that in a call to `session.localizer.gettext()` to map the message ID to its localized text string. There are times where you may need to manually call the localizer.
-
-##### Using the SDK to manually localize text
-
-You can also localize content by using [session.gettext() method](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.session.html#gettext) which returns a localized string using the session's preferred locale. This same method also supports template strings, where placeholders are replaced with the other arguments passed to the method. E.g:
-
-````JavaScript
-// bot/locale/en/checkout.json
-{
-    "final_price": "The final price is $%d (including delivery). Pay securely using our payment provider.",
-}
-
-// bot/dialogs/checkout.js#L37
-var messageText = session.gettext('final_price', order.selection.price);
-var card = new builder.HeroCard(session)
-    .text(messageText);
-````
-
-### More Information
-
-To get more information about how to get started in Bot Builder for Node review the following resources:
-
-* [Dialogs](https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-dialog-manage-conversation)
-* [Dialog Stack](https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-dialog-manage-conversation#dialog-stack)
-* [Prompt users for input](https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-dialog-prompt)
-* [Adding Dialogs and Memory](https://docs.botframework.com/en-us/node/builder/guides/core-concepts/#adding-dialogs-and-memory)
-* [Collecting Input](https://docs.botframework.com/en-us/node/builder/guides/core-concepts/#collecting-input)
-* [Attachments, Cards and Actions](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.iattachment.html)
-* [Bot Libraries](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.library)
-* [Localization](https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-localization)
-* [Custom Channel Capabilities](https://docs.botframework.com/en-us/csharp/builder/sdkreference/channels.html)
-* [LUIS](https://docs.botframework.com/en-us/node/builder/guides/understanding-natural-language/)
-
-
-> **Limitations**  
-> The functionality provided by the Bot Framework Activity can be used across many channels. Moreover, some special channel features can be unleashed using the [Message.sourceEvent](https://docs.botframework.com/en-us/node/builder/chat-reference/classes/_botbuilder_d_.message.html#sourceevent) method.
-> 
-> The Bot Framework does its best to support the reuse of your Bot in as many channels as you want. However, due to the very nature of some of these channels, some features are not fully portable.
-> 
-> The features used in this sample are fully supported in the following channels:
-> - Skype
-> - Facebook
-> - Slack
-> - DirectLine
-> - WebChat
-> - GroupMe
-> 
-> They are also supported, with some limitations, in the following channel:
-> - Microsoft Teams (Receipt card not supported)
-> - Email
-> 
-> On the other hand, they are not supported and the sample won't work as expected in the following channels:
-> - Telegram
-> - SMS
-> - Kik
+Internally, the SDK will call `session.preferredLocale()` to get the users preferred locale and will then use that in a call 
