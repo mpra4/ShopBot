@@ -16,16 +16,16 @@ sudo apt-get install parallel
 sudo apt-get install imagemagick
 sudo apt-get install tesseract-ocr
 ````
-2. Create the following folders
+### Create the following folders
 
-/mnt/sample_pdfs/
-/mnt/tiff_folder/
-/mnt/output_folder/ 2
+* /path/to/sample_pdfs/     The directory having the pdf files 
+* /path/to/tiff_folder/     The directory for storing the tiff files generated.
+* /path/to/output_folder/   The directory for storing the output files.
 
-Example
-
+### Example
+````
 ./pdfToHocr.sh /mnt/sample_pdfs/ /mnt/tiff_folder/ /mnt/output_folder/ 2
-
+````
 3. To view core utilization
 sudo apt-get install htop
 
