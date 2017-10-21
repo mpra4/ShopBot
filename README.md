@@ -31,5 +31,5 @@ sudo apt-get install tesseract-ocr
 sudo apt-get install htop
 ````
 
-![Alt text](/new_image?raw=true "Optional Title")
+![Alt text](/core_utilization.png?raw=true "core utilization")
 
