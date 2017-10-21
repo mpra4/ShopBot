@@ -18,16 +18,18 @@ sudo apt-get install tesseract-ocr
 ````
 ### Create the following folders
 
-* /path/to/sample_pdfs/     The directory having the pdf files 
-* /path/to/tiff_folder/     The directory for storing the tiff files generated.
-* /path/to/output_folder/   The directory for storing the output files.
+* sample_pdfs     The directory having the pdf files 
+* tiff_folder     The directory for storing the tiff files generated.
+* output_folder   The directory for storing the output files.
 
 ### Example
 ````
 ./pdfToHocr.sh /mnt/sample_pdfs/ /mnt/tiff_folder/ /mnt/output_folder/ 2
 ````
-3. To view core utilization
+### To view core utilization
+````
 sudo apt-get install htop
+````
 
 put the attachment from below.
 
