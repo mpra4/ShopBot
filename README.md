@@ -31,5 +31,5 @@ sudo apt-get install tesseract-ocr
 sudo apt-get install htop
 ````
 
-![Alt text](/relative/path/to/img.jpg?raw=true "Optional Title")
+![Alt text](/new_image?raw=true "Optional Title")
 
